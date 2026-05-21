@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LifeStream — Blood Donation Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --crimson:#b01020;
+  --crimson-dark:#7a0b15;
+  --crimson-light:#e8192c;
+  --rose:#fde8ea;
+  --rose-mid:#f7c5ca;
+  --gold:#c9913a;
+  --cream:#fdf8f5;
+  --surface:#ffffff;
+  --text:#1a0f11;
+  --text-muted:#7a6266;
+  --text-light:#b3a5a8;
+  --border:#ecdde0;
+  --border-strong:#d4b8bc;
+  --success:#1e7a4a;
+  --success-bg:#e9f7ef;
+  --warning:#b06000;
+  --warning-bg:#fff3e0;
+  --danger:#b01020;
+  --danger-bg:#fde8ea;
+  --info:#1855a3;
+  --info-bg:#e8f0fd;
+  --sidebar-w:260px;
+  --header-h:64px;
+  --radius:10px;
+  --radius-lg:16px;
+  --shadow:0 2px 12px rgba(176,16,32,.08);
+  --shadow-lg:0 8px 32px rgba(176,16,32,.14);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);background:var(--crimson-dark);min-height:100vh;display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.12)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-drop{width:34px;height:34px;background:var(--crimson-light);border-radius:50% 50% 40% 60%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;position:relative;animation:pulse 2.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,25,44,.4)}70%{box-shadow:0 0 0 8px rgba(232,25,44,0)}}
+.logo-text{color:#fff;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;line-height:1.1}
+.logo-text span{display:block;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:400;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.nav{flex:1;padding:16px 0;overflow-y:auto}
+.nav-section{margin-bottom:4px}
+.nav-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:8px 20px 4px}
+.nav-link{display:flex;align-items:center;gap:12px;padding:11px 20px;color:rgba(255,255,255,.7);font-size:14px;font-weight:400;cursor:pointer;border-radius:0;transition:all .2s;border-left:3px solid transparent}
+.nav-link i{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.nav-link:hover{background:rgba(255,255,255,.08);color:#fff;border-left-color:rgba(255,255,255,.3)}
+.nav-link.active{background:rgba(255,255,255,.12);color:#fff;border-left-color:var(--crimson-light);font-weight:500}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.12)}
+.emergency-btn{display:flex;align-items:center;gap:8px;background:var(--crimson-light);color:#fff;border:none;border-radius:var(--radius);padding:11px 16px;width:100%;cursor:pointer;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;transition:background .2s}
+.emergency-btn:hover{background:#c8111f}
+.emergency-btn i{font-size:14px}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.header{height:var(--header-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 var(--border)}
+.header-left h2{font-size:18px;font-weight:500;color:var(--text)}
+.header-left p{font-size:13px;color:var(--text-muted);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:12px}
+.header-badge{display:flex;align-items:center;gap:6px;background:var(--danger-bg);color:var(--danger);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600}
+.header-badge i{font-size:12px;animation:pulse 1.8s infinite}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--crimson);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+.content{padding:28px;flex:1}
+.section{display:none}
+.section.active{display:block;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── DASHBOARD ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:var(--radius-lg);padding:20px;border:1px solid var(--border);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08}
+.stat-card.c1::before{background:var(--crimson);content:''}
+.stat-card.c2::before{background:#1e7a4a}
+.stat-card.c3::before{background:#1855a3}
+.stat-card.c4::before{background:#b06000}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px}
+.stat-card.c1 .stat-icon{background:var(--rose);color:var(--crimson)}
+.stat-card.c2 .stat-icon{background:var(--success-bg);color:var(--success)}
+.stat-card.c3 .stat-icon{background:var(--info-bg);color:var(--info)}
+.stat-card.c4 .stat-icon{background:var(--warning-bg);color:var(--warning)}
+.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px;letter-spacing:.3px}
+.stat-value{font-size:28px;font-weight:600;color:var(--text);font-family:'Cormorant Garamond',serif;line-height:1}
+.stat-sub{font-size:12px;color:var(--text-muted);margin-top:6px}
+.stat-sub.up{color:var(--success)}
+.stat-sub.down{color:var(--danger)}
+
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px}
+.panel{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden}
+.panel-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-hdr h3{font-size:15px;font-weight:500}
+.panel-body{padding:16px 20px}
+.panel-link{font-size:13px;color:var(--crimson);cursor:pointer;font-weight:500}
+.panel-link:hover{text-decoration:underline}
+
+/* Blood Inventory Bars */
+.inv-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.inv-row:last-child{margin-bottom:0}
+.blood-type{width:38px;height:38px;border-radius:50%;background:var(--rose);border:2px solid var(--rose-mid);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--crimson);flex-shrink:0}
+.inv-meta{flex:1}
+.inv-meta-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.inv-meta-top .name{font-weight:500;color:var(--text)}
+.inv-meta-top .count{color:var(--text-muted)}
+.bar-track{height:6px;background:var(--rose);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+.bar-fill.critical{background:#e8192c}
+.bar-fill.low{background:#f59e0b}
+.bar-fill.ok{background:#22c55e}
+.bar-fill.high{background:#1855a3}
+
+/* Recent Requests Table */
+.req-table{width:100%;border-collapse:collapse;font-size:13px}
+.req-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);padding:0 8px 10px;border-bottom:1px solid var(--border)}
+.req-table td{padding:11px 8px;border-bottom:1px solid var(--border)}
+.req-table tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+.badge.critical{background:#fde8ea;color:#b01020}
+.badge.urgent{background:#fff3e0;color:#b06000}
+.badge.routine{background:#e9f7ef;color:#1e7a4a}
+.badge.fulfilled{background:#e8f0fd;color:#1855a3}
+.badge.pending{background:#f5f0ff;color:#6c3fc7}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+
+/* ── FORMS ── */
+.form-card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:28px;max-width:680px}
+.form-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px}
+.form-sub{font-size:14px;color:var(--text-muted);margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:20px}
+.form-group{margin-bottom:18px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+label.lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase}
+.inp,select.inp,textarea.inp{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:#fff;transition:border-color .2s,box-shadow .2s;outline:none}
+.inp:focus,select.inp:focus,textarea.inp:focus{border-color:var(--crimson);box-shadow:0 0 0 3px rgba(176,16,32,.1)}
+textarea.inp{min-height:90px;resize:vertical}
+select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a6266' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+.radio-group{display:flex;gap:12px;flex-wrap:wrap}
+.radio-opt{display:flex;align-items:center;gap:8px;cursor:pointer}
+.radio-opt input{accent-color:var(--crimson);width:16px;height:16px}
+.radio-opt span{font-size:14px}
+
+.check-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check-opt{display:flex;align-items:center;gap:8px;cursor:pointer}
+.check-opt input{accent-color:var(--crimson);width:15px;height:15px}
+.check-opt span{font-size:13px}
+
+.btn-primary{background:var(--crimson);color:#fff;border:none;padding:12px 28px;border-radius:var(--radius);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--crimson-dark);transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:#fff;color:var(--crimson);border:1.5px solid var(--crimson);padding:11px 22px;border-radius:var(--radius);font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-secondary:hover{background:var(--rose)}
+.btn-row{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+
+.success-msg{display:none;background:var(--success-bg);border:1px solid #bbdfc8;border-radius:var(--radius);padding:16px;margin-top:16px;color:var(--success);font-size:14px;align-items:center;gap:10px}
+.success-msg i{font-size:20px}
+
+/* ── SEARCH/FIND ── */
+.search-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.search-bar .inp{flex:1;min-width:180px}
+.filter-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-chip{border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;transition:all .2s;background:#fff;color:var(--text-muted);font-family:'DM Sans',sans-serif}
+.filter-chip.active,.filter-chip:hover{border-color:var(--crimson);color:var(--crimson);background:var(--rose)}
+.donor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.donor-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all .2s;cursor:pointer}
+.donor-card:hover{border-color:var(--border-strong);box-shadow:var(--shadow);transform:translateY(-2px)}
+.donor-avatar{width:48px;height:48px;border-radius:50%;background:var(--rose);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--crimson);margin-bottom:12px;position:relative}
+.donor-badge{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:var(--success);border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center}
+.donor-badge i{color:#fff;font-size:8px}
+.donor-name{font-size:15px;font-weight:600;margin-bottom:2px}
+.donor-meta{font-size:12px;color:var(--text-muted);margin-bottom:10px}
+.donor-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600}
+.tag.blood{background:var(--rose);color:var(--crimson)}
+.tag.city{background:var(--info-bg);color:var(--info)}
+.tag.count{background:var(--success-bg);color:var(--success)}
+.contact-btn{width:100%;margin-top:12px;background:var(--rose);color:var(--crimson);border:1px solid var(--rose-mid);border-radius:var(--radius);padding:9px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s}
+.contact-btn:hover{background:var(--crimson);color:#fff}
+
+/* ── INVENTORY ── */
+.inv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.inv-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;text-align:center;position:relative;overflow:hidden;cursor:pointer;transition:all .2s}
+.inv-card:hover{border-color:var(--border-strong);box-shadow:var(--shadow);transform:translateY(-2px)}
+.inv-blood-type{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:var(--crimson);margin-bottom:4px;line-height:1}
+.inv-units{font-size:28px;font-weight:600;margin-bottom:2px;color:var(--text)}
+.inv-unit-label{font-size:11px;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.inv-level{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.5px}
+.inv-level.critical{background:var(--danger-bg);color:var(--danger)}
+.inv-level.low{background:var(--warning-bg);color:var(--warning)}
+.inv-level.adequate{background:var(--success-bg);color:var(--success)}
+.inv-level.high{background:var(--info-bg);color:var(--info)}
+.inv-stripe{height:4px;position:absolute;bottom:0;left:0;right:0}
+.inv-stripe.critical{background:var(--crimson)}
+.inv-stripe.low{background:#f59e0b}
+.inv-stripe.adequate{background:#22c55e}
+.inv-stripe.high{background:#1855a3}
+
+.add-stock-panel{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-top:16px}
+
+/* ── ADMIN ── */
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.a-tab{padding:10px 18px;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text-muted);transition:all .2s;margin-bottom:-1px}
+.a-tab.active{color:var(--crimson);border-bottom-color:var(--crimson);font-weight:500}
+.a-tab:hover:not(.active){color:var(--text)}
+
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);padding:10px 12px;border-bottom:2px solid var(--border);background:var(--cream)}
+.data-table td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--cream)}
+.action-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.action-btn.approve{color:var(--success);border-color:#bbdfc8}
+.action-btn.approve:hover{background:var(--success-bg)}
+.action-btn.reject{color:var(--danger);border-color:#f7c5ca}
+.action-btn.reject:hover{background:var(--danger-bg)}
+.action-btn.view{color:var(--info);border-color:#b5d4f4}
+.action-btn.view:hover{background:var(--info-bg)}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,15,17,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:28px;width:90%;max-width:480px;position:relative;animation:fadeUp .25s ease}
+.modal h3{font-size:18px;font-weight:600;margin-bottom:4px}
+.modal p{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.modal-close:hover{background:var(--cream);color:var(--text)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--text);color:#fff;padding:14px 20px;border-radius:var(--radius);font-size:14px;display:flex;align-items:center;gap:10px;z-index:300;transform:translateY(80px);opacity:0;transition:all .4s;box-shadow:var(--shadow-lg)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast i{font-size:16px}
+
+/* ── RESPONSIVE NAV ── */
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;color:var(--text);font-size:22px;padding:4px}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .menu-toggle{display:block}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .inv-grid{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:1fr}
+  .inv-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .content{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-drop"><i class="fa-solid fa-droplet"></i></div>
+      <div class="logo-text">LifeStream<span>Blood Donation Portal</span></div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-section-label">Overview</div>
+      <div class="nav-link active" onclick="navigate('dashboard',this)"><i class="fa-solid fa-chart-line"></i>Dashboard</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Donors</div>
+      <div class="nav-link" onclick="navigate('register',this)"><i class="fa-solid fa-user-plus"></i>Register as Donor</div>
+      <div class="nav-link" onclick="navigate('find',this)"><i class="fa-solid fa-magnifying-glass"></i>Find Donors</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Requests</div>
+      <div class="nav-link" onclick="navigate('request',this)"><i class="fa-solid fa-hand-holding-heart"></i>Request Blood</div>
+      <div class="nav-link" onclick="navigate('inventory',this)"><i class="fa-solid fa-vials"></i>Blood Inventory</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Administration</div>
+      <div class="nav-link" onclick="navigate('admin',this)"><i class="fa-solid fa-shield-halved"></i>Admin Panel</div>
+      <div class="nav-link" onclick="navigate('camp',this)"><i class="fa-solid fa-tent"></i>Donation Camps</div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="emergency-btn" onclick="emergencyModal()">
+      <i class="fa-solid fa-triangle-exclamation"></i>Emergency Request
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left" style="display:flex;align-items:center;gap:14px">
+      <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div>
+        <h2 id="page-title">Dashboard</h2>
+        <p id="page-sub">Welcome back, Admin</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-badge"><i class="fa-solid fa-circle"></i>3 Urgent Requests</div>
+      <div class="avatar">AD</div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ─── DASHBOARD ─── -->
+    <div class="section active" id="sec-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card c1">
+          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-label">Registered Donors</div>
+          <div class="stat-value">4,823</div>
+          <div class="stat-sub up"><i class="fa-solid fa-arrow-up"></i> 127 this month</div>
+        </div>
+        <div class="stat-card c2">
+          <div class="stat-icon"><i class="fa-solid fa-droplet"></i></div>
+          <div class="stat-label">Units Donated (Month)</div>
+          <div class="stat-value">1,241</div>
+          <div class="stat-sub up"><i class="fa-solid fa-arrow-up"></i> 9.4% vs last month</div>
+        </div>
+        <div class="stat-card c3">
+          <div class="stat-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+          <div class="stat-label">Lives Saved (Est.)</div>
+          <div class="stat-value">3,723</div>
+          <div class="stat-sub">Each unit can save up to 3 lives</div>
+        </div>
+        <div class="stat-card c4">
+          <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="stat-label">Pending Requests</div>
+          <div class="stat-value">38</div>
+          <div class="stat-sub down"><i class="fa-solid fa-arrow-down"></i> 3 critical urgency</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-hdr">
+            <h3><i class="fa-solid fa-file-lines" style="color:var(--crimson);margin-right:8px"></i>Recent Blood Requests</h3>
+            <span class="panel-link" onclick="navigate('admin',document.querySelectorAll('.nav-link')[5])">View all →</span>
+          </div>
+          <div class="panel-body" style="padding:0 20px">
+            <table class="req-table">
+              <thead><tr><th>Patient</th><th>Type</th><th>Units</th><th>Priority</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Ravi M.</td><td>B+</td><td>2</td><td><span class="badge critical">🔴 Critical</span></td><td><span class="badge pending">Pending</span></td></tr>
+                <tr><td>Priya S.</td><td>O−</td><td>4</td><td><span class="badge critical">🔴 Critical</span></td><td><span class="badge pending">Pending</span></td></tr>
+                <tr><td>Anita K.</td><td>A+</td><td>1</td><td><span class="badge urgent">🟡 Urgent</span></td><td><span class="badge fulfilled">Fulfilled</span></td></tr>
+                <tr><td>Mohan R.</td><td>AB+</td><td>3</td><td><span class="badge routine">🟢 Routine</span></td><td><span class="badge fulfilled">Fulfilled</span></td></tr>
+                <tr><td>Sunita D.</td><td>O+</td><td>2</td><td><span class="badge urgent">🟡 Urgent</span></td><td><span class="badge pending">Pending</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <h3><i class="fa-solid fa-vials" style="color:var(--crimson);margin-right:8px"></i>Inventory Overview</h3>
+            <span class="panel-link" onclick="navigate('inventory',document.querySelectorAll('.nav-link')[4])">Manage →</span>
+          </div>
+          <div class="panel-body">
+            <div id="mini-inventory"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:0">
+        <div class="panel-hdr">
+          <h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--crimson);margin-right:8px"></i>Recent Donors</h3>
+        </div>
+        <div class="panel-body" style="padding:0 20px">
+          <table class="req-table">
+            <thead><tr><th>Name</th><th>Blood Type</th><th>City</th><th>Date</th><th>Donations</th></tr></thead>
+            <tbody>
+              <tr><td>Arjun Sharma</td><td><span class="badge critical">B+</span></td><td>Mumbai</td><td>20 May 2025</td><td>5</td></tr>
+              <tr><td>Deepa Nair</td><td><span class="badge fulfilled">O−</span></td><td>Pune</td><td>19 May 2025</td><td>12</td></tr>
+              <tr><td>Kiran Patel</td><td><span class="badge urgent">A+</span></td><td>Nashik</td><td>18 May 2025</td><td>3</td></tr>
+              <tr><td>Meena Iyer</td><td><span class="badge pending">AB+</span></td><td>Mumbai</td><td>17 May 2025</td><td>8</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── REGISTER ─── -->
+    <div class="section" id="sec-register">
+      <div class="form-card">
+        <div class="form-title">Become a Donor</div>
+        <div class="form-sub">Register to save lives — your blood could help up to 3 people.</div>
+        <form id="donor-form" onsubmit="submitDonor(event)">
+          <div class="form-row">
+            <div><label class="lbl">First Name</label><input class="inp" type="text" id="d-first" required placeholder="First name"/></div>
+            <div><label class="lbl">Last Name</label><input class="inp" type="text" id="d-last" required placeholder="Last name"/></div>
+          </div>
+          <div class="form-row">
+            <div><label class="lbl">Date of Birth</label><input class="inp" type="date" id="d-dob" required/></div>
+            <div>
+              <label class="lbl">Gender</label>
+              <div class="radio-group" style="margin-top:10px">
+                <label class="radio-opt"><input type="radio" name="gender" value="Male" required/><span>Male</span></label>
+                <label class="radio-opt"><input type="radio" name="gender" value="Female"/><span>Female</span></label>
+                <label class="radio-opt"><input type="radio" name="gender" value="Other"/><span>Other</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="lbl">Blood Type</label>
+              <select class="inp" id="d-blood" required>
+                <option value="">Select blood type</option>
+                <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+                <option>AB+</option><option>AB−</option><option>O+</option><option>O−</option>
+              </select>
+            </div>
+            <div><label class="lbl">Phone Number</label><input class="inp" type="tel" id="d-phone" required placeholder="+91 XXXXX XXXXX"/></div>
+          </div>
+          <div class="form-row">
+            <div><label class="lbl">Email Address</label><input class="inp" type="email" id="d-email" required placeholder="email@example.com"/></div>
+            <div><label class="lbl">City</label><input class="inp" type="text" id="d-city" required placeholder="Your city"/></div>
+          </div>
+          <div class="form-group">
+            <label class="lbl">Full Address</label>
+            <textarea class="inp" id="d-address" placeholder="Street, area, PIN code"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="lbl">Medical Conditions (if any)</label>
+            <div class="check-group">
+              <label class="check-opt"><input type="checkbox" value="diabetes"/><span>Diabetes</span></label>
+              <label class="check-opt"><input type="checkbox" value="hypertension"/><span>Hypertension</span></label>
+              <label class="check-opt"><input type="checkbox" value="heart"/><span>Heart Disease</span></label>
+              <label class="check-opt"><input type="checkbox" value="none" checked/><span>None</span></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="lbl">Last Donation Date (if previously donated)</label>
+            <input class="inp" type="date" id="d-lastdon"/>
+          </div>
+          <div class="form-group" style="margin-top:8px">
+            <label class="radio-opt">
+              <input type="checkbox" required/><span style="font-size:13px;color:var(--text-muted)">I confirm I am 18–65 years old, weigh at least 45 kg, and am in good health. I consent to being contacted for donation requests.</span>
+            </label>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-check"></i>Register as Donor</button>
+            <button type="reset" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+          </div>
+          <div class="success-msg" id="donor-success"><i class="fa-solid fa-circle-check"></i>Registration successful! Your donor ID is <strong id="donor-id"></strong>. We'll contact you when blood is needed.</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ─── FIND DONORS ─── -->
+    <div class="section" id="sec-find">
+      <div style="margin-bottom:20px">
+        <div class="search-bar">
+          <input class="inp" type="text" id="search-name" placeholder="Search donor name or city..." oninput="filterDonors()"/>
+          <select class="inp" id="search-blood" onchange="filterDonors()" style="max-width:160px">
+            <option value="">All Blood Types</option>
+            <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+            <option>AB+</option><option>AB−</option><option>O+</option><option>O−</option>
+          </select>
+          <select class="inp" id="search-city" onchange="filterDonors()" style="max-width:180px">
+            <option value="">All Cities</option>
+            <option>Mumbai</option><option>Pune</option><option>Nashik</option><option>Nagpur</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <button class="filter-chip active" onclick="availFilter('all',this)">All Donors</button>
+          <button class="filter-chip" onclick="availFilter('available',this)">Available Now</button>
+          <button class="filter-chip" onclick="availFilter('veteran',this)">Veteran (5+ donations)</button>
+        </div>
+      </div>
+      <div class="donor-grid" id="donor-grid"></div>
+    </div>
+
+    <!-- ─── REQUEST BLOOD ─── -->
+    <div class="section" id="sec-request">
+      <div class="form-card">
+        <div class="form-title">Request Blood</div>
+        <div class="form-sub">Fill in patient and hospital details. We'll match available donors immediately.</div>
+        <form id="request-form" onsubmit="submitRequest(event)">
+          <div class="form-row">
+            <div><label class="lbl">Patient Name</label><input class="inp" type="text" id="r-patient" required placeholder="Full name"/></div>
+            <div><label class="lbl">Patient Age</label><input class="inp" type="number" id="r-age" required placeholder="Age" min="0" max="120"/></div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="lbl">Blood Type Required</label>
+              <select class="inp" id="r-blood" required>
+                <option value="">Select blood type</option>
+                <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+                <option>AB+</option><option>AB−</option><option>O+</option><option>O−</option>
+              </select>
+            </div>
+            <div><label class="lbl">Units Required</label><input class="inp" type="number" id="r-units" required placeholder="Number of units" min="1" max="20"/></div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="lbl">Priority / Urgency</label>
+              <select class="inp" id="r-priority" required>
+                <option value="">Select urgency level</option>
+                <option value="critical">🔴 Critical (within 1 hour)</option>
+                <option value="urgent">🟡 Urgent (within 6 hours)</option>
+                <option value="routine">🟢 Routine (within 48 hours)</option>
+              </select>
+            </div>
+            <div><label class="lbl">Required By Date</label><input class="inp" type="date" id="r-date" required/></div>
+          </div>
+          <div class="form-group">
+            <label class="lbl">Hospital Name</label>
+            <input class="inp" type="text" id="r-hospital" required placeholder="Hospital / medical centre name"/>
+          </div>
+          <div class="form-row">
+            <div><label class="lbl">Hospital City</label><input class="inp" type="text" id="r-hcity" required placeholder="City"/></div>
+            <div><label class="lbl">Contact Person</label><input class="inp" type="text" id="r-contact" required placeholder="Name of requesting person"/></div>
+          </div>
+          <div class="form-row">
+            <div><label class="lbl">Contact Phone</label><input class="inp" type="tel" id="r-phone" required placeholder="+91 XXXXX XXXXX"/></div>
+            <div><label class="lbl">Contact Email</label><input class="inp" type="email" id="r-email" placeholder="Optional"/></div>
+          </div>
+          <div class="form-group">
+            <label class="lbl">Additional Notes</label>
+            <textarea class="inp" id="r-notes" placeholder="Medical details, special requirements..."></textarea>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i>Submit Request</button>
+            <button type="reset" class="btn-secondary"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+          </div>
+          <div class="success-msg" id="req-success"><i class="fa-solid fa-circle-check"></i>Request submitted! Reference ID: <strong id="req-id"></strong>. We're matching donors now.</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ─── INVENTORY ─── -->
+    <div class="section" id="sec-inventory">
+      <div class="inv-grid" id="inv-grid"></div>
+      <div class="add-stock-panel">
+        <h3 style="font-size:15px;font-weight:500;margin-bottom:16px"><i class="fa-solid fa-plus" style="color:var(--crimson);margin-right:8px"></i>Add Blood Units to Inventory</h3>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <label class="lbl">Blood Type</label>
+            <select class="inp" id="add-type" style="width:130px">
+              <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+              <option>AB+</option><option>AB−</option><option>O+</option><option>O−</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Units to Add</label>
+            <input class="inp" type="number" id="add-units" min="1" max="100" value="1" style="width:120px"/>
+          </div>
+          <div>
+            <label class="lbl">Expiry Date</label>
+            <input class="inp" type="date" id="add-expiry" style="width:160px"/>
+          </div>
+          <button class="btn-primary" onclick="addStock()"><i class="fa-solid fa-plus"></i>Add Units</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ADMIN ─── -->
+    <div class="section" id="sec-admin">
+      <div class="admin-tabs">
+        <div class="a-tab active" onclick="adminTab('requests',this)">Pending Requests</div>
+        <div class="a-tab" onclick="adminTab('donors',this)">All Donors</div>
+        <div class="a-tab" onclick="adminTab('camps',this)">Donation Camps</div>
+      </div>
+      <div class="panel" id="admin-requests">
+        <div class="panel-body" style="padding:0 0 0 0;overflow:auto">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Patient</th><th>Blood</th><th>Units</th><th>Hospital</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="admin-req-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel" id="admin-donors" style="display:none">
+        <div class="panel-body" style="padding:0;overflow:auto">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Name</th><th>Blood</th><th>City</th><th>Phone</th><th>Donations</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="admin-donors-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel" id="admin-camps-panel" style="display:none">
+        <div class="panel-body" style="padding:0;overflow:auto">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Camp Name</th><th>Date</th><th>Venue</th><th>City</th><th>Organiser</th><th>Registrations</th></tr></thead>
+            <tbody id="admin-camps-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CAMPS ─── -->
+    <div class="section" id="sec-camp">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h3 style="font-size:18px;font-weight:500">Upcoming Donation Camps</h3>
+          <p style="font-size:13px;color:var(--text-muted)">Register to donate blood at a camp near you</p>
+        </div>
+        <button class="btn-primary" onclick="openCampModal()"><i class="fa-solid fa-plus"></i>Add Camp</button>
+      </div>
+      <div id="camp-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- EMERGENCY MODAL -->
+<div class="modal-overlay" id="emg-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('emg-modal')"><i class="fa-solid fa-xmark"></i></button>
+    <h3 style="color:var(--crimson)"><i class="fa-solid fa-triangle-exclamation" style="margin-right:8px"></i>Emergency Blood Request</h3>
+    <p>For critical emergencies only. We will alert all nearby donors immediately.</p>
+    <div class="form-group"><label class="lbl">Blood Type Needed</label>
+      <select class="inp" id="emg-blood">
+        <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+        <option>AB+</option><option>AB−</option><option>O+</option><option>O−</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div><label class="lbl">Units Needed</label><input class="inp" type="number" id="emg-units" value="2" min="1"/></div>
+      <div><label class="lbl">Contact Phone</label><input class="inp" type="tel" id="emg-phone" placeholder="+91 XXXXX XXXXX"/></div>
+    </div>
+    <div class="form-group"><label class="lbl">Hospital / Location</label><input class="inp" type="text" id="emg-hosp" placeholder="Hospital name and city"/></div>
+    <div class="btn-row">
+      <button class="btn-primary" style="background:#e8192c" onclick="submitEmergency()"><i class="fa-solid fa-bolt"></i>Send Emergency Alert</button>
+    </div>
+  </div>
+</div>
+
+<!-- CAMP MODAL -->
+<div class="modal-overlay" id="camp-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('camp-modal')"><i class="fa-solid fa-xmark"></i></button>
+    <h3>Add Donation Camp</h3>
+    <p>Register a new blood donation camp event.</p>
+    <div class="form-row">
+      <div><label class="lbl">Camp Name</label><input class="inp" type="text" id="camp-name" placeholder="Camp name"/></div>
+      <div><label class="lbl">Date</label><input class="inp" type="date" id="camp-date"/></div>
+    </div>
+    <div class="form-group"><label class="lbl">Venue</label><input class="inp" type="text" id="camp-venue" placeholder="Venue name"/></div>
+    <div class="form-row">
+      <div><label class="lbl">City</label><input class="inp" type="text" id="camp-city" placeholder="City"/></div>
+      <div><label class="lbl">Organiser</label><input class="inp" type="text" id="camp-org" placeholder="Organisation"/></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="addCamp()"><i class="fa-solid fa-check"></i>Add Camp</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fa-solid fa-check-circle"></i><span id="toast-msg"></span></div>
+
+<script>
+// ─── DATA ───
+const donors = [
+  {id:'D001',name:'Arjun Sharma',blood:'B+',city:'Mumbai',phone:'+91 98765 43210',email:'arjun@mail.com',age:28,donations:5,available:true,last:'2025-03-15'},
+  {id:'D002',name:'Deepa Nair',blood:'O−',city:'Pune',phone:'+91 97654 32109',email:'deepa@mail.com',age:34,donations:12,available:true,last:'2025-05-19'},
+  {id:'D003',name:'Kiran Patel',blood:'A+',city:'Nashik',phone:'+91 96543 21098',email:'kiran@mail.com',age:22,donations:3,available:false,last:'2025-05-18'},
+  {id:'D004',name:'Meena Iyer',blood:'AB+',city:'Mumbai',phone:'+91 95432 10987',email:'meena@mail.com',age:31,donations:8,available:true,last:'2025-05-17'},
+  {id:'D005',name:'Suresh Gupta',blood:'O+',city:'Nagpur',phone:'+91 94321 09876',email:'suresh@mail.com',age:45,donations:20,available:true,last:'2025-04-10'},
+  {id:'D006',name:'Lakshmi Reddy',blood:'A−',city:'Pune',phone:'+91 93210 98765',email:'lakshmi@mail.com',age:27,donations:2,available:true,last:'2025-02-28'},
+  {id:'D007',name:'Vijay Kumar',blood:'B−',city:'Mumbai',phone:'+91 92109 87654',email:'vijay@mail.com',age:38,donations:7,available:false,last:'2025-05-01'},
+  {id:'D008',name:'Rani Singh',blood:'AB−',city:'Nashik',phone:'+91 91098 76543',email:'rani@mail.com',age:29,donations:1,available:true,last:'2025-05-20'},
+];
+
+const requests = [
+  {id:'R001',patient:'Ravi M.',blood:'B+',units:2,hospital:'KEM Hospital',city:'Mumbai',priority:'critical',status:'pending',contact:'Dr. Sharma',phone:'+91 22111 22333'},
+  {id:'R002',patient:'Priya S.',blood:'O−',units:4,hospital:'Breach Candy Hospital',city:'Mumbai',priority:'critical',status:'pending',contact:'Dr. Mehta',phone:'+91 22444 55666'},
+  {id:'R003',patient:'Anita K.',blood:'A+',units:1,hospital:'Sassoon Hospital',city:'Pune',priority:'urgent',status:'fulfilled',contact:'Dr. Joshi',phone:'+91 20777 88999'},
+  {id:'R004',patient:'Mohan R.',blood:'AB+',units:3,hospital:'Civil Hospital',city:'Nagpur',priority:'routine',status:'fulfilled',contact:'Dr. Patel',phone:'+91 71222 33444'},
+  {id:'R005',patient:'Sunita D.',blood:'O+',units:2,hospital:'Wockhardt Hospital',city:'Mumbai',priority:'urgent',status:'pending',contact:'Dr. Rao',phone:'+91 22555 66777'},
+];
+
+const inventory = [
+  {type:'A+',units:45,max:60},{type:'A−',units:8,max:40},
+  {type:'B+',units:32,max:60},{type:'B−',units:4,max:30},
+  {type:'AB+',units:20,max:30},{type:'AB−',units:2,max:20},
+  {type:'O+',units:55,max:70},{type:'O−',units:6,max:40},
+];
+
+const camps = [
+  {id:'C001',name:'Blood Hero Drive',date:'2025-06-10',venue:'Shivaji Park, Dadar',city:'Mumbai',org:'Red Cross Society',regs:128},
+  {id:'C002',name:'Give Life Camp',date:'2025-06-15',venue:'Fergusson College Grounds',city:'Pune',org:'Lions Club',regs:74},
+  {id:'C003',name:'Unity Blood Drive',date:'2025-06-22',venue:'Rashtrasant Tukadoji Maharaj Nagpur University',city:'Nagpur',org:'NSS Unit',regs:42},
+];
+
+// ─── NAVIGATION ───
+function navigate(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={dashboard:'Dashboard',register:'Register as Donor',find:'Find Donors',request:'Request Blood',inventory:'Blood Inventory',admin:'Admin Panel',camp:'Donation Camps'};
+  document.getElementById('page-title').textContent=titles[sec]||sec;
+  if(window.innerWidth<900) document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
+
+// ─── DASHBOARD MINI-INV ───
+function renderMiniInv(){
+  const el=document.getElementById('mini-inventory');
+  const levels=['critical','low','ok','high'];
+  el.innerHTML=inventory.map(item=>{
+    const pct=Math.round(item.units/item.max*100);
+    const lvl=pct<20?'critical':pct<40?'low':pct<75?'ok':'high';
+    return `<div class="inv-row">
+      <div class="blood-type">${item.type}</div>
+      <div class="inv-meta">
+        <div class="inv-meta-top"><span class="name">${item.type}</span><span class="count">${item.units} / ${item.max} units</span></div>
+        <div class="bar-track"><div class="bar-fill ${lvl}" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── INVENTORY ───
+function renderInventory(){
+  const el=document.getElementById('inv-grid');
+  el.innerHTML=inventory.map((item,i)=>{
+    const pct=Math.round(item.units/item.max*100);
+    let lvl,label;
+    if(pct<20){lvl='critical';label='Critical'}
+    else if(pct<40){lvl='low';label='Low Stock'}
+    else if(pct<75){lvl='adequate';label='Adequate'}
+    else{lvl='high';label='High Stock'}
+    return `<div class="inv-card" onclick="showToast('${item.type}: ${item.units} units available','info')">
+      <div class="inv-blood-type">${item.type}</div>
+      <div class="inv-units">${item.units}</div>
+      <div class="inv-unit-label">Units Available</div>
+      <span class="inv-level ${lvl}">${label}</span>
+      <div class="inv-stripe ${lvl}"></div>
+    </div>`;
+  }).join('');
+}
+
+function addStock(){
+  const type=document.getElementById('add-type').value;
+  const units=parseInt(document.getElementById('add-units').value)||0;
+  if(!units||units<1){showToast('Enter valid units','error');return}
+  const item=inventory.find(i=>i.type===type);
+  if(item){item.units=Math.min(item.units+units,item.max)}
+  renderInventory();
+  renderMiniInv();
+  showToast(`Added ${units} unit(s) of ${type} to inventory`,'success');
+}
+
+// ─── DONORS ───
+let activeAvail='all';
+function renderDonors(){
+  const q=document.getElementById('search-name').value.toLowerCase();
+  const bt=document.getElementById('search-blood').value;
+  const city=document.getElementById('search-city').value;
+  let list=donors.filter(d=>{
+    const nameMatch=!q||d.name.toLowerCase().includes(q)||d.city.toLowerCase().includes(q);
+    const btMatch=!bt||d.blood===bt;
+    const cityMatch=!city||d.city===city;
+    const availMatch=activeAvail==='all'||(activeAvail==='available'&&d.available)||(activeAvail==='veteran'&&d.donations>=5);
+    return nameMatch&&btMatch&&cityMatch&&availMatch;
+  });
+  const el=document.getElementById('donor-grid');
+  if(!list.length){el.innerHTML='<p style="color:var(--text-muted);font-size:14px;padding:20px">No donors found matching your criteria.</p>';return}
+  el.innerHTML=list.map(d=>`
+    <div class="donor-card">
+      <div class="donor-avatar">${d.name.split(' ').map(n=>n[0]).join('')}
+        ${d.available?'<div class="donor-badge"><i class="fa-solid fa-check"></i></div>':''}
+      </div>
+      <div class="donor-name">${d.name}</div>
+      <div class="donor-meta">Age ${d.age} · Last donated ${d.last}</div>
+      <div class="donor-tags">
+        <span class="tag blood">${d.blood}</span>
+        <span class="tag city">${d.city}</span>
+        <span class="tag count">${d.donations} donations</span>
+        ${!d.available?'<span class="tag" style="background:var(--warning-bg);color:var(--warning)">Unavailable</span>':''}
+      </div>
+      <button class="contact-btn" onclick="contactDonor('${d.id}','${d.name}','${d.phone}')"><i class="fa-solid fa-phone" style="margin-right:6px"></i>Contact Donor</button>
+    </div>
+  `).join('');
+}
+
+function filterDonors(){renderDonors()}
+function availFilter(type,el){
+  activeAvail=type;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderDonors();
+}
+function contactDonor(id,name,phone){
+  showToast(`Contacting ${name} at ${phone}`,'info');
+}
+
+// ─── FORMS ───
+let donorCount=4824,reqCount=6;
+function submitDonor(e){
+  e.preventDefault();
+  const id='D'+String(donorCount++).padStart(3,'0');
+  document.getElementById('donor-id').textContent=id;
+  document.getElementById('donor-success').style.display='flex';
+  showToast('Donor registered successfully!','success');
+}
+function submitRequest(e){
+  e.preventDefault();
+  const id='R'+String(reqCount++).padStart(3,'0');
+  document.getElementById('req-id').textContent=id;
+  document.getElementById('req-success').style.display='flex';
+  showToast('Blood request submitted!','success');
+}
+
+// ─── ADMIN ───
+function renderAdminReqs(){
+  document.getElementById('admin-req-body').innerHTML=requests.map(r=>`
+    <tr>
+      <td style="font-weight:600;color:var(--crimson)">${r.id}</td>
+      <td>${r.patient}</td>
+      <td><span class="badge ${r.priority}">${r.blood}</span></td>
+      <td>${r.units}</td>
+      <td>${r.hospital}, ${r.city}</td>
+      <td><span class="badge ${r.priority}">${r.priority.charAt(0).toUpperCase()+r.priority.slice(1)}</span></td>
+      <td><span class="badge ${r.status}">${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="action-btn approve" onclick="updateReqStatus('${r.id}','fulfilled')">Fulfill</button>
+        <button class="action-btn reject" onclick="updateReqStatus('${r.id}','rejected')">Reject</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function updateReqStatus(id,status){
+  const r=requests.find(x=>x.id===id);
+  if(r){r.status=status;renderAdminReqs();showToast(`Request ${id} marked as ${status}`,'success')}
+}
+function renderAdminDonors(){
+  document.getElementById('admin-donors-body').innerHTML=donors.map(d=>`
+    <tr>
+      <td style="font-weight:600;color:var(--crimson)">${d.id}</td>
+      <td>${d.name}</td>
+      <td><span class="badge critical">${d.blood}</span></td>
+      <td>${d.city}</td>
+      <td>${d.phone}</td>
+      <td>${d.donations}</td>
+      <td><span class="badge ${d.available?'fulfilled':'urgent'}">${d.available?'Active':'Unavailable'}</span></td>
+      <td><button class="action-btn view" onclick="showToast('Viewing ${d.name}','info')">View</button></td>
+    </tr>
+  `).join('');
+}
+function renderAdminCamps(){
+  document.getElementById('admin-camps-body').innerHTML=camps.map(c=>`
+    <tr>
+      <td style="font-weight:600;color:var(--crimson)">${c.id}</td>
+      <td>${c.name}</td>
+      <td>${c.date}</td>
+      <td>${c.venue}</td>
+      <td>${c.city}</td>
+      <td>${c.org}</td>
+      <td>${c.regs}</td>
+    </tr>
+  `).join('');
+}
+function adminTab(tab,el){
+  document.querySelectorAll('.a-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('admin-requests').style.display='none';
+  document.getElementById('admin-donors').style.display='none';
+  document.getElementById('admin-camps-panel').style.display='none';
+  if(tab==='requests')document.getElementById('admin-requests').style.display='block';
+  if(tab==='donors')document.getElementById('admin-donors').style.display='block';
+  if(tab==='camps')document.getElementById('admin-camps-panel').style.display='block';
+}
+
+// ─── CAMPS ───
+function renderCamps(){
+  document.getElementById('camp-cards').innerHTML=camps.map(c=>`
+    <div class="panel" style="padding:0;overflow:hidden">
+      <div style="background:var(--crimson);padding:16px 20px">
+        <div style="color:rgba(255,255,255,.7);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase">${c.date}</div>
+        <div style="color:#fff;font-size:17px;font-weight:600;margin-top:4px">${c.name}</div>
+      </div>
+      <div style="padding:16px 20px">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px"><i class="fa-solid fa-location-dot" style="color:var(--crimson);margin-right:6px"></i>${c.venue}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px"><i class="fa-solid fa-city" style="margin-right:6px"></i>${c.city}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px"><i class="fa-solid fa-building" style="margin-right:6px"></i>${c.org}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--text-muted)"><i class="fa-solid fa-users" style="color:var(--crimson);margin-right:4px"></i>${c.regs} registered</span>
+          <button class="btn-primary" style="padding:8px 16px;font-size:13px" onclick="registerCamp('${c.id}')"><i class="fa-solid fa-check"></i>Register</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function registerCamp(id){
+  const c=camps.find(x=>x.id===id);
+  if(c){c.regs++;renderCamps();showToast('Registered for '+c.name+'!','success')}
+}
+function openCampModal(){document.getElementById('camp-modal').classList.add('open')}
+function addCamp(){
+  const name=document.getElementById('camp-name').value;
+  const date=document.getElementById('camp-date').value;
+  const venue=document.getElementById('camp-venue').value;
+  const city=document.getElementById('camp-city').value;
+  const org=document.getElementById('camp-org').value;
+  if(!name||!date||!venue||!city){showToast('Fill all required fields','error');return}
+  const id='C'+String(camps.length+1).padStart(3,'0');
+  camps.push({id,name,date,venue,city,org:org||'Unknown',regs:0});
+  renderCamps();renderAdminCamps();
+  closeModal('camp-modal');
+  showToast('Camp added successfully!','success');
+}
+
+// ─── EMERGENCY ───
+function emergencyModal(){document.getElementById('emg-modal').classList.add('open')}
+function submitEmergency(){
+  const blood=document.getElementById('emg-blood').value;
+  const phone=document.getElementById('emg-phone').value;
+  const hosp=document.getElementById('emg-hosp').value;
+  if(!phone||!hosp){showToast('Fill phone and hospital','error');return}
+  closeModal('emg-modal');
+  showToast(`Emergency alert sent for ${blood}! Notifying all nearby donors.`,'success');
+}
+
+// ─── UTILS ───
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')}));
+
+let toastTimer;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.className='toast'+(type?' '+type:'');
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info','':`fa-circle-check`};
+  t.querySelector('i').className='fa-solid '+(icons[type]||'fa-circle-check');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ─── INIT ───
+renderMiniInv();
+renderInventory();
+renderDonors();
+renderAdminReqs();
+renderAdminDonors();
+renderAdminCamps();
+renderCamps();
+
+// Set default dates
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('r-date').value=today;
+document.getElementById('add-expiry').value=new Date(Date.now()+35*864e5).toISOString().split('T')[0];
+</script>
+</body>
+</html>
